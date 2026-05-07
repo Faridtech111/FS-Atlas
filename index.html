@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Atlas Prime is a responsive country information web application with maps, charts, quiz, favorites, weather, news, and comparison tools."
+    />
+    <title>FS Atlas | Country Intelligence</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIINfQ+QprnXqU5q9nJHt6NMT0UY01tEXbM="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+      defer
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="loading-screen" id="loadingScreen" aria-live="polite">
+      <div class="loader-orbit" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p data-i18n="loading">Loading world data...</p>
+    </div>
+
+    <header class="site-header" id="top">
+      <nav class="navbar" aria-label="Primary navigation">
+        <a class="brand" href="#home" aria-label="Atlas Prime home">
+          <span class="brand-mark">FS</span>
+          <span>FS Atlas</span>
+        </a>
+
+        <button class="icon-button mobile-menu-button" id="mobileMenuBtn" aria-label="Open menu" type="button">
+          <i data-lucide="menu"></i>
+        </button>
+
+        <div class="nav-panel" id="navPanel">
+          <a href="#countries" data-i18n="navCountries">Countries</a>
+          <a href="#compare" data-i18n="navCompare">Compare</a>
+          <a href="#quiz" data-i18n="navQuiz">Quiz</a>
+          <a href="#favorites" data-i18n="navFavorites">Favorites</a>
+        </div>
+
+        <div class="nav-actions">
+          <select class="language-select" id="languageSelect" aria-label="Language">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="ar">Arabic</option>
+            <option value="ja">Japanese</option>
+          </select>
+          <button class="icon-button" id="apiSettingsBtn" type="button" aria-label="API settings" title="API settings">
+            <i data-lucide="key-round"></i>
+          </button>
+          <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+            <i data-lucide="sun-moon"></i>
+          </button>
+          <button class="pill-button" id="authBtn" type="button">
+            <i data-lucide="user-round"></i>
+            <span data-i18n="login">Login</span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <canvas id="globeCanvas" class="globe-canvas" aria-hidden="true"></canvas>
+        <div class="hero-sheen" aria-hidden="true"></div>
+        <div class="hero-content">
+          <span class="eyebrow" data-i18n="eyebrow">Global country intelligence</span>
+          <h1 data-i18n="heroTitle">Atlas Prime</h1>
+          <p data-i18n="heroText">
+            Explore countries, compare economies, save favorites, play quizzes, and inspect live maps from a fast modern dashboard.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#countries">
+              <i data-lucide="compass"></i>
+              <span data-i18n="startExploring">Start exploring</span>
+            </a>
+            <a class="secondary-button" href="#quiz">
+              <i data-lucide="sparkles"></i>
+              <span data-i18n="playQuiz">Play quiz</span>
+            </a>
+          </div>
+        </div>
+        <div class="hero-metrics" aria-label="Application highlights">
+          <div>
+            <strong id="metricCountryCount">250+</strong>
+            <span data-i18n="countriesMetric">Countries</span>
+          </div>
+          <div>
+            <strong>14</strong>
+            <span data-i18n="featuresMetric">Live modules</span>
+          </div>
+          <div>
+            <strong>4</strong>
+            <span data-i18n="languagesMetric">Languages</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="command-center" id="countries" aria-label="Country search and filters">
+        <div class="search-shell">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="Search countries, capitals, languages..."
+              data-i18n-placeholder="searchPlaceholder"
+              aria-label="Search countries"
+            />
+            <button class="icon-button voice-button" id="voiceBtn" type="button" aria-label="Voice search" title="Voice search">
+              <i data-lucide="mic"></i>
+            </button>
+          </div>
+          <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
+        </div>
+        <div class="filter-row" id="continentFilters" aria-label="Continent filters">
+          <button class="filter-chip active" type="button" data-continent="All" data-i18n="filterAll">All</button>
+          <button class="filter-chip" type="button" data-continent="Asia">Asia</button>
+          <button class="filter-chip" type="button" data-continent="Europe">Europe</button>
+          <button class="filter-chip" type="button" data-continent="Africa">Africa</button>
+          <button class="filter-chip" type="button" data-continent="North America">North America</button>
+          <button class="filter-chip" type="button" data-continent="South America">South America</button>
+          <button class="filter-chip" type="button" data-continent="Oceania">Oceania</button>
+        </div>
+        <div class="result-meta">
+          <span id="resultCount">0 countries</span>
+          <span id="dataStatus" data-i18n="syncing">Syncing REST Countries API</span>
+        </div>
+      </section>
+
+      <section class="section-block favorites-section" id="favorites">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow" data-i18n="saved">Saved</span>
+            <h2 data-i18n="favoriteCountries">Favorite countries</h2>
+          </div>
+          <button class="text-button" id="clearFavoritesBtn" type="button" data-i18n="clearFavorites">Clear favorites</button>
+        </div>
+        <div class="favorite-strip" id="favoriteStrip"></div>
+      </section>
+
+      <section class="countries-wrap">
+        <div class="country-grid" id="countryGrid" aria-live="polite"></div>
+        <div class="load-sentinel" id="loadSentinel"></div>
+        <button class="load-more" id="loadMoreBtn" type="button" data-i18n="loadMore">Load more</button>
+      </section>
+
+      <section class="section-block compare-section" id="compare">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow" data-i18n="analysis">Analysis</span>
+            <h2 data-i18n="compareTitle">Country comparison</h2>
+          </div>
+        </div>
+        <div class="compare-controls">
+          <label>
+            <span data-i18n="countryOne">Country one</span>
+            <select id="compareA"></select>
+          </label>
+          <button class="swap-button" id="swapCompareBtn" type="button" aria-label="Swap countries" title="Swap countries">
+            <i data-lucide="arrow-left-right"></i>
+          </button>
+          <label>
+            <span data-i18n="countryTwo">Country two</span>
+            <select id="compareB"></select>
+          </label>
+        </div>
+        <div class="compare-grid" id="compareGrid"></div>
+        <div class="chart-panel">
+          <canvas id="compareChart" aria-label="Country comparison chart"></canvas>
+        </div>
+      </section>
+
+      <section class="section-block quiz-section" id="quiz">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow" data-i18n="challenge">Challenge</span>
+            <h2 data-i18n="quizTitle">Country quiz game</h2>
+          </div>
+          <div class="score-pill">
+            <span data-i18n="score">Score</span>
+            <strong id="quizScore">0 / 0</strong>
+          </div>
+        </div>
+        <div class="quiz-layout">
+          <div class="quiz-card">
+            <div class="segmented" role="group" aria-label="Quiz mode">
+              <button class="active" type="button" data-quiz-mode="flag" data-i18n="guessFlag">Guess the flag</button>
+              <button type="button" data-quiz-mode="capital" data-i18n="guessCapital">Guess the capital</button>
+            </div>
+            <div class="quiz-stage" id="quizStage"></div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-actions">
+              <button class="secondary-button" id="nextQuestionBtn" type="button" data-i18n="nextQuestion">Next question</button>
+              <button class="text-button" id="resetQuizBtn" type="button" data-i18n="resetScore">Reset score</button>
+            </div>
+          </div>
+          <div class="visited-panel">
+            <div class="section-heading compact">
+              <div>
+                <span class="eyebrow" data-i18n="history">History</span>
+                <h3 data-i18n="visitedCountries">Visited countries</h3>
+              </div>
+            </div>
+            <div class="visited-list" id="visitedList"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <a class="brand footer-brand" href="#top">
+          <span class="brand-mark">FS</span>
+          <span>FS Atlas created by farid shaikh...</span>
+        </a>
+        <p data-i18n="footerText">Built for fast country discovery with REST Countries, Leaflet, Chart.js, and Three.js.</p>
+      </div>
+      <div class="social-row" aria-label="Social links">
+        <a href="https://github.com" aria-label="GitHub"><i data-lucide="github"></i></a>
+        <a href="https://www.linkedin.com" aria-label="LinkedIn"><i data-lucide="linkedin"></i></a>
+        <a href="https://x.com" aria-label="X"><i data-lucide="twitter"></i></a>
+      </div>
+    </footer>
+
+    <section class="modal" id="countryModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal></div>
+      <article class="country-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="icon-button close-button" type="button" data-close-modal aria-label="Close details">
+          <i data-lucide="x"></i>
+        </button>
+        <div class="detail-hero">
+          <img id="detailFlag" alt="" />
+          <div>
+            <span class="eyebrow" id="detailContinent"></span>
+            <h2 id="detailTitle">Country</h2>
+            <p id="detailSubtitle"></p>
+          </div>
+          <button class="pill-button" id="detailFavoriteBtn" type="button">
+            <i data-lucide="heart"></i>
+            <span data-i18n="favorite">Favorite</span>
+          </button>
+        </div>
+        <div class="detail-tabs" role="tablist" aria-label="Country detail sections">
+          <button class="active" type="button" data-detail-tab="overview" data-i18n="overview">Overview</button>
+          <button type="button" data-detail-tab="map" data-i18n="map">Map</button>
+          <button type="button" data-detail-tab="charts" data-i18n="charts">Charts</button>
+          <button type="button" data-detail-tab="news" data-i18n="news">News</button>
+        </div>
+        <div class="detail-pane active" data-detail-pane="overview">
+          <div class="detail-grid" id="detailGrid"></div>
+          <div class="detail-split">
+            <div class="glass-panel">
+              <h3 data-i18n="weather">Weather</h3>
+              <div id="weatherPanel" class="weather-panel"></div>
+            </div>
+            <div class="glass-panel">
+              <h3 data-i18n="facts">Interesting facts</h3>
+              <ul id="factsList" class="facts-list"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="detail-pane" data-detail-pane="map">
+          <div id="countryMap" class="country-map"></div>
+        </div>
+        <div class="detail-pane" data-detail-pane="charts">
+          <div class="mini-chart-grid">
+            <div class="chart-panel"><canvas id="populationChart"></canvas></div>
+            <div class="chart-panel"><canvas id="gdpChart"></canvas></div>
+            <div class="chart-panel"><canvas id="literacyChart"></canvas></div>
+          </div>
+        </div>
+        <div class="detail-pane" data-detail-pane="news">
+          <div id="newsPanel" class="news-panel"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="modal small-modal" id="authModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-auth></div>
+      <article class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <button class="icon-button close-button" type="button" data-close-auth aria-label="Close login">
+          <i data-lucide="x"></i>
+        </button>
+        <h2 id="authTitle" data-i18n="account">Account</h2>
+        <div class="segmented auth-tabs" role="group" aria-label="Authentication mode">
+          <button class="active" type="button" data-auth-mode="login" data-i18n="login">Login</button>
+          <button type="button" data-auth-mode="register" data-i18n="register">Register</button>
+        </div>
+        <form id="authForm" class="form-stack">
+          <label>
+            <span data-i18n="name">Name</span>
+            <input id="authName" type="text" autocomplete="name" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input id="authEmail" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span data-i18n="password">Password</span>
+            <input id="authPassword" type="password" autocomplete="current-password" required minlength="4" />
+          </label>
+          <button class="primary-button full" type="submit" id="authSubmit" data-i18n="continue">Continue</button>
+          <p class="form-note" id="authNote"></p>
+        </form>
+      </article>
+    </section>
+
+    <section class="modal small-modal" id="apiModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-api></div>
+      <article class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="apiTitle">
+        <button class="icon-button close-button" type="button" data-close-api aria-label="Close API settings">
+          <i data-lucide="x"></i>
+        </button>
+        <h2 id="apiTitle" data-i18n="apiSettings">API settings</h2>
+        <form id="apiForm" class="form-stack">
+          <label>
+            <span>OpenWeather API key</span>
+            <input id="weatherKeyInput" type="password" autocomplete="off" placeholder="OpenWeather key" />
+          </label>
+          <label>
+            <span>NewsAPI key</span>
+            <input id="newsKeyInput" type="password" autocomplete="off" placeholder="NewsAPI key" />
+          </label>
+          <button class="primary-button full" type="submit" data-i18n="saveKeys">Save keys</button>
+          <p class="form-note" id="apiNote" data-i18n="keysStored">Keys stay in this browser only.</p>
+        </form>
+      </article>
+    </section>
+
+    <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">
+      <i data-lucide="arrow-up"></i>
+    </button>
+  </body>
+</html>
