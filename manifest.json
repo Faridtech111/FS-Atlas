@@ -1,0 +1,14 @@
+{
+  "background_color": "#26d493",
+  "description": "Atlas Prime is a responsive country information web application with maps, charts, quiz, favorites, weather, news, and comparison tools.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "FS Atlas",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Atlas",
+  "start_url": "faridatlas",
+  "theme_color": "#277b43",
+  "lang": "en",
+  "id": "faridatlas"
+}
