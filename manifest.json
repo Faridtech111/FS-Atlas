@@ -10,5 +10,20 @@
   "start_url": "faridatlas",
   "theme_color": "#277b43",
   "lang": "en",
-  "id": "faridatlas"
+  "id": "faridatlas",
+
+   "icons": [
+    {
+      "src": "atlas.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "atlas.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+
+
 }
